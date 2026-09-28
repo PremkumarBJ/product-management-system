@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Update Product</title>
+  <style>
+    * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; }
+    body { background-color: #f8fafc; color: #334155; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+    .form-card { background: white; padding: 36px; border-radius: 12px; border: 1px solid #e2e8f0; width: 100%; max-width: 420px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05); }
+    .form-card h2 { font-size: 22px; color: #0f172a; margin-bottom: 20px; text-align: center; }
+    .form-group { margin-bottom: 16px; }
+    label { display: block; font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 6px; }
+    input { width: 100%; padding: 10px 14px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; outline: none; transition: border-color 0.2s, box-shadow 0.2s; }
+    input:focus { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15); }
+    button { width: 100%; background-color: #2563eb; color: white; padding: 12px; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; transition: background-color 0.2s; margin-top: 8px; }
+    button:hover { background-color: #1d4ed8; }
+    .message { margin-top: 18px; padding: 12px 16px; border-radius: 8px; font-weight: 600; font-size: 14px; text-align: center; }
+    .message-info { background-color: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
+    .message-error { background-color: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+    .back-link { display: block; text-align: center; margin-top: 18px; color: #64748b; text-decoration: none; font-size: 14px; font-weight: 500; }
+    .back-link:hover { color: #0f172a; }
+  </style>
+</head>
+<body>
+
+  <div class="form-card">
+    <h2>Update Product</h2>
+    <form id="updateForm">
+      <div class="form-group">
+        <label>Product ID</label>
+        <input type="number" id="id" placeholder="Enter ID to fetch details" required>
+      </div>
+      <div class="form-group">
+        <label>Name</label>
+        <input type="text" id="name" placeholder="Product name" required>
+      </div>
+      <div class="form-group">
+        <label>Description</label>
+        <input type="text" id="description" placeholder="Product description" required>
+      </div>
+      <div class="form-group">
+        <label>Price (₹)</label>
+        <input type="number" id="price" placeholder="Product price" required>
+      </div>
+      <div class="form-group">
+        <label>Photo URL</label>
+        <input type="text" id="photoUrl" placeholder="Image URL" required>
+      </div>
+      <button type="submit">Update Product</button>
+    </form>
+
+    <div id="messageArea"></div>
+    <a href="product_management.html" class="back-link">← Back to Menu</a>
+  </div>
+
+  <script>
+    const idInput = document.getElementById("id");
+    const messageArea = document.getElementById("messageArea");
+
+    // Fetch product details automatically when Product ID field loses focus (blur event)
+    idInput.addEventListener("blur", async function() {
+      const id = idInput.value.trim();
+      if (!id) return;
+
+      try {
+        const res = await fetch("/viewProduct/" + id);
+        if (!res.ok) throw new Error("Product not found");
+
+        const product = await res.json();
+        
+        // Auto-fill all input fields with existing values
+        document.getElementById("name").value = product.name ?? "";
+        document.getElementById("description").value = product.description ?? "";
+        document.getElementById("price").value = product.price ?? "";
+        document.getElementById("photoUrl").value = product.photoUrl ?? "";
+
+        messageArea.innerHTML = `<div class="message message-info">Product details loaded. Edit any field you want to change.</div>`;
+      } catch (error) {
+        messageArea.innerHTML = `<div class="message message-error">Product with ID ${id} not found.</div>`;
+      }
+    });
+
+    // Handle form submit
+    document.getElementById("updateForm").addEventListener("submit", async function(e) {
+      e.preventDefault();
+      messageArea.innerHTML = "";
+
+      const product = {
+        id: parseInt(document.getElementById("id").value),
+        name: document.getElementById("name").value,
+        description: document.getElementById("description").value,
+        price: parseInt(document.getElementById("price").value),
+        photoUrl: document.getElementById("photoUrl").value
+      };
+
+      try {
+        const res = await fetch("/updateProduct", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(product)
+        });
+
+        if (!res.ok) throw new Error(`Server status ${res.status}`);
+
+        const msg = await res.text();
+        messageArea.innerHTML = `<div class="message message-info">${msg}</div>`;
+      } catch (error) {
+        messageArea.innerHTML = `<div class="message message-error">Failed to update product. Please try again.</div>`;
+      }
+    });
+  </script>
+
+</body>
+</html>

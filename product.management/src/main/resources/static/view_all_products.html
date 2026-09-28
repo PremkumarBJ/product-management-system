@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>View All Products</title>
+  <style>
+    * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; }
+    body { background-color: #f8fafc; color: #334155; padding: 40px; }
+    .container { max-width: 1000px; margin: 0 auto; background: white; border-radius: 12px; padding: 32px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+    
+    .header-section { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+    h2 { font-size: 22px; color: #0f172a; }
+    
+    button { background-color: #2563eb; color: white; padding: 10px 18px; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: background-color 0.2s; }
+    button:hover { background-color: #1d4ed8; }
+    
+    .message { margin-bottom: 18px; padding: 12px 16px; border-radius: 8px; font-weight: 600; font-size: 14px; }
+    .message-info { background-color: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
+    .message-error { background-color: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+    .empty-message { padding: 16px; text-align: center; color: #64748b; font-weight: 500; font-size: 14px; background: #f1f5f9; border-radius: 8px; }
+
+    .table-wrapper { overflow-x: auto; margin-top: 10px; }
+    table { width: 100%; border-collapse: collapse; text-align: left; }
+    th { background-color: #f1f5f9; color: #475569; padding: 14px; font-size: 13px; font-weight: 600; text-transform: uppercase; border-bottom: 1px solid #cbd5e1; }
+    td { padding: 14px; border-bottom: 1px solid #e2e8f0; font-size: 14px; vertical-align: middle; }
+    tr:hover { background-color: #f8fafc; }
+    
+    .product-img { width: 56px; height: 56px; object-fit: cover; border-radius: 8px; border: 1px solid #cbd5e1; display: block; }
+    .back-link { display: inline-block; margin-top: 24px; color: #64748b; text-decoration: none; font-size: 14px; font-weight: 500; }
+    .back-link:hover { color: #0f172a; }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="header-section">
+      <h2>All Products List</h2>
+      <button onclick="viewAllProducts()">Load All Products</button>
+    </div>
+
+    <div id="messageArea"></div>
+    <div id="resultArea"></div>
+
+    <a href="product_management.html" class="back-link">← Back to Menu</a>
+  </div>
+
+  <script>
+    async function viewAllProducts() {
+      const messageArea = document.getElementById("messageArea");
+      const resultArea = document.getElementById("resultArea");
+
+      try {
+        // Pointing to http://localhost:8080 and matching your controller endpoint /viewAllProducts
+        const response = await fetch("http://localhost:8080/viewAllProducts");
+
+        if (!response.ok) {
+          messageArea.innerHTML = `<div class="message message-error">Unable to fetch products. Server returned status ${response.status}.</div>`;
+          resultArea.innerHTML = "";
+          return;
+        }
+
+        const products = await response.json();
+
+        messageArea.innerHTML = `<div class="message message-info">All products fetched successfully.</div>`;
+
+        if (!products || products.length === 0) {
+          resultArea.innerHTML = `<div class="empty-message">No products found in the database.</div>`;
+          return;
+        }
+
+        let rows = "";
+
+        products.forEach(product => {
+          rows += `
+            <tr>
+              <td>${product.id ?? ""}</td>
+              <td>
+                <img 
+                  class="product-img" 
+                  src="${product.photoUrl ?? ''}" 
+                  alt="${product.name ?? 'Product'}" 
+                  onerror="this.src='https://via.placeholder.com/56?text=No+Img'"
+                >
+              </td>
+              <td><strong>${product.name ?? ""}</strong></td>
+              <td>${product.description ?? ""}</td>
+              <td>$${product.price ?? ""}</td>
+            </tr>
+          `;
+        });
+
+        resultArea.innerHTML = `
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Image</th>
+                  <th>Name</th>
+                  <th>Description</th>
+                  <th>Price</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${rows}
+              </tbody>
+            </table>
+          </div>
+        `;
+      } catch (error) {
+        messageArea.innerHTML = `<div class="message message-error">Something went wrong while connecting to the server. Make sure Spring Boot is running and CORS is allowed.</div>`;
+        resultArea.innerHTML = "";
+        console.error("Fetch Error:", error);
+      }
+    }
+  </script>
+
+</body>
+</html>

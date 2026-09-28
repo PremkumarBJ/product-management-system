@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Delete Product</title>
+  <style>
+    * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; }
+    body { background-color: #f8fafc; color: #334155; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+    .form-card { background: white; padding: 36px; border-radius: 12px; border: 1px solid #e2e8f0; width: 100%; max-width: 420px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05); }
+    .form-card h2 { font-size: 22px; color: #0f172a; margin-bottom: 20px; text-align: center; }
+    .form-group { margin-bottom: 16px; }
+    label { display: block; font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 6px; }
+    input { width: 100%; padding: 10px 14px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; outline: none; transition: border-color 0.2s, box-shadow 0.2s; }
+    input:focus { border-color: #dc2626; box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.15); }
+    button { width: 100%; background-color: #dc2626; color: white; padding: 12px; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; transition: background-color 0.2s; margin-top: 8px; }
+    button:hover { background-color: #b91c1c; }
+    .back-link { display: block; text-align: center; margin-top: 18px; color: #64748b; text-decoration: none; font-size: 14px; font-weight: 500; }
+    .back-link:hover { color: #0f172a; }
+  </style>
+</head>
+<body>
+
+  <div class="form-card">
+    <h2>Delete Product</h2>
+    <form id="deleteForm">
+      <div class="form-group">
+        <label>Product ID to Delete</label>
+        <input type="number" id="id" placeholder="e.g. 101" required>
+      </div>
+      <button type="submit">Delete Product</button>
+    </form>
+    <a href="product_management.html" class="back-link">← Back to Menu</a>
+  </div>
+
+  <script>
+    document.getElementById("deleteForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const id = document.getElementById("id").value;
+
+      fetch("/deleteProduct/" + id, { method: "DELETE" })
+      .then(res => res.text())
+      .then(msg => {
+        alert(msg);
+        document.getElementById("deleteForm").reset();
+      });
+    });
+  </script>
+
+</body>
+</html>
